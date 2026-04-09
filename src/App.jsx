@@ -39,10 +39,6 @@ export default function App() {
     setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
   }, [setTheme]);
 
-  useEffect(() => {
-    const t = setInterval(() => refresh(), refreshInterval);
-    return () => clearInterval(t);
-  }, [refresh, refreshInterval]);
 
   const toggleBookmark = useCallback((id) => {
     setBookmarks((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
