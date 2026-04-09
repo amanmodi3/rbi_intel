@@ -25,7 +25,7 @@ export default function FeedGrid({ items, bookmarks, onToggleBookmark, searchQue
 
   return (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+      <div className="feed-grid-inner" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
         {display.map((item, idx) => (
           <div
             key={item.id || idx}

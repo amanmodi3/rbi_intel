@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { format, subDays, isAfter, startOfDay } from 'date-fns';
-import { BookmarkCheck, MoveRight } from 'lucide-react';
+import { BookmarkCheck, MoveRight, LayoutDashboard, BarChart2, Menu, RefreshCw } from 'lucide-react';
 
 import Header       from './components/Header.jsx';
 import FilterBar    from './components/FilterBar.jsx';
@@ -24,6 +24,7 @@ export default function App() {
   const [theme, setTheme] = useLocalStorage('rbi_theme', 'light');
 
   const [showBookmarks, setShowBookmarks] = useState(false);
+  const [mobileDrawer, setMobileDrawer] = useState(null); // 'nav' | 'stats' | null
   const [category,      setCategory]      = useState('all');
   const [activeTopics,  setActiveTopics]  = useState([]);
   const [sortBy,        setSortBy]        = useState('newest');
@@ -230,7 +231,7 @@ export default function App() {
               }
             </div>
 
-            {/* Right analytics panel */}
+            {/* Right analytics panel — desktop */}
             <aside className="right-panel">
               {loading
                 ? <LoadingSkeleton isSidebar />
@@ -245,6 +246,54 @@ export default function App() {
 
           </div>
         </div>
+
+        {/* Mobile drawer overlay */}
+        {mobileDrawer && (
+          <div className="mobile-drawer-overlay" onClick={() => setMobileDrawer(null)}>
+            {mobileDrawer === 'nav' && (
+              <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
+                <LeftNav
+                  category={category}
+                  onCategoryChange={(c) => { setCategory(c); setMobileDrawer(null); }}
+                  activeTopics={activeTopics}
+                  onTopicToggle={handleTopicToggle}
+                  bookmarkCount={bookmarks.length}
+                  showBookmarks={showBookmarks}
+                  onToggleBookmarks={() => { setShowBookmarks((v) => !v); setMobileDrawer(null); }}
+                  feedStatus={feedStatus}
+                  onExportCsv={() => { handleExportCsv(); setMobileDrawer(null); }}
+                />
+              </div>
+            )}
+            {mobileDrawer === 'stats' && (
+              <div className="mobile-drawer mobile-drawer-right" onClick={(e) => e.stopPropagation()}>
+                <StatsBar items={items} />
+                <TrendChart items={items} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile bottom nav */}
+        <nav className="mobile-nav">
+          <button className={`mobile-nav-item ${mobileDrawer === 'nav' ? 'active' : ''}`} onClick={() => setMobileDrawer(d => d === 'nav' ? null : 'nav')}>
+            <Menu size={20} strokeWidth={1.75} />
+            <span>Menu</span>
+          </button>
+          <button className="mobile-nav-item" onClick={() => { setMobileDrawer(null); setCategory('all'); setShowBookmarks(false); }}>
+            <LayoutDashboard size={20} strokeWidth={1.75} />
+            <span>Feed</span>
+          </button>
+          <button className={`mobile-nav-item ${mobileDrawer === 'stats' ? 'active' : ''}`} onClick={() => setMobileDrawer(d => d === 'stats' ? null : 'stats')}>
+            <BarChart2 size={20} strokeWidth={1.75} />
+            <span>Stats</span>
+          </button>
+          <button className="mobile-nav-item" onClick={() => { refresh(); setMobileDrawer(null); }} disabled={loading}>
+            <RefreshCw size={20} strokeWidth={1.75} className={loading ? 'spin' : ''} />
+            <span>Refresh</span>
+          </button>
+        </nav>
+
       </div>
     </>
   );
