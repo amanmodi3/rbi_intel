@@ -99,7 +99,23 @@ export function useFeed() {
 
   const cacheFeed = useCallback((feedId, feedItems) => {
     try {
-      localStorage.setItem(`${CACHE_KEY_PREFIX}${feedId}`, JSON.stringify(feedItems));
+      // Merge new items with existing stored items — append, never overwrite history.
+      const existing = (() => {
+        try {
+          const raw = localStorage.getItem(`${CACHE_KEY_PREFIX}${feedId}`);
+          return raw ? JSON.parse(raw) : [];
+        } catch { return []; }
+      })();
+
+      const seen = new Set(existing.map(i => i.id || i.link));
+      const merged = [
+        ...existing,
+        ...feedItems.filter(i => !seen.has(i.id || i.link)),
+      ];
+      // Sort newest first
+      merged.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+      localStorage.setItem(`${CACHE_KEY_PREFIX}${feedId}`, JSON.stringify(merged));
       localStorage.setItem(`${CACHE_TIMESTAMP_PREFIX}${feedId}`, String(Date.now()));
     } catch { /* storage full */ }
   }, []);
