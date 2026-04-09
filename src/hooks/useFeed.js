@@ -172,11 +172,11 @@ export function useFeed() {
           if (stale && stale.length > 0) {
             newStatus[feed.id] = { ok: true, fromCache: true };
             anyFromCache = true;
-            toast(`⚠️ ${feed.name}: no new items, showing saved data`, { duration: 4000 });
+            toast(`${feed.name}: no new items, showing saved data`, { duration: 4000 });
             return stale;
           }
           newStatus[feed.id] = { ok: false, error: 'No items parsed' };
-          toast.error(`⚠️ ${feed.name}: no data available`, { duration: 4000 });
+          toast.error(`${feed.name}: no data available`, { duration: 4000 });
           return [];
         } catch (err) {
           console.error(`Failed to fetch ${feed.name}:`, err);
@@ -186,11 +186,11 @@ export function useFeed() {
           if (stale && stale.length > 0) {
             newStatus[feed.id] = { ok: true, fromCache: true, hadError: true };
             anyFromCache = true;
-            toast(`⚠️ ${feed.name}: fetch failed, showing saved data`, { duration: 4000 });
+            toast(`${feed.name}: fetch failed, showing saved data`, { duration: 4000 });
             return stale;
           }
           newStatus[feed.id] = { ok: false, error: err.message };
-          toast.error(`⚠️ ${feed.name} failed to load`, { duration: 4000 });
+          toast.error(`${feed.name} failed to load`, { duration: 4000 });
           return [];
         }
       });
@@ -226,7 +226,7 @@ export function useFeed() {
 
       if (taggedItems.length > 0) {
         const nbfcCount = taggedItems.filter((i) => i.isNBFCRelevant).length;
-        toast.success(`✅ Loaded ${taggedItems.length} items (${nbfcCount} NBFC-relevant)`, { duration: 3000 });
+        toast.success(`Loaded ${taggedItems.length} items (${nbfcCount} NBFC-relevant)`, { duration: 3000 });
       }
     },
     [items.length, fetchSingleFeed, getCachedFeed, cacheFeed]
