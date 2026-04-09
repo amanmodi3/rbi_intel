@@ -21,7 +21,7 @@ export default function App() {
   const [refreshInterval, setRefreshInterval] = useLocalStorage(
     'rbi_refresh_interval', DEFAULT_REFRESH_INTERVAL_MS
   );
-  const [theme, setTheme] = useLocalStorage('rbi_theme', 'dark');
+  const [theme, setTheme] = useLocalStorage('rbi_theme', 'light');
 
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [category,      setCategory]      = useState('all');
