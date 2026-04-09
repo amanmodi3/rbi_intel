@@ -93,9 +93,6 @@ export default function Header({
       {/* Right-side controls grouped for mobile ordering */}
       <div className="top-bar-actions" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
 
-        {/* Spacer — desktop only */}
-        <div style={{ flex: 1 }} />
-
         {/* Timestamp */}
         {lastUpdated && (
           <div style={{ fontSize: 11, color: 'var(--text-3)', textAlign: 'right', flexShrink: 0, lineHeight: 1.4 }}>
