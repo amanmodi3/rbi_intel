@@ -2,7 +2,7 @@ export const FEEDS = [
   {
     id: 'pressreleases',
     name: 'Press Releases',
-    proxyPath: '/rss/pressreleases',
+    proxyPath: '/api/rss/pressreleases',
     directUrl: 'https://www.rbi.org.in/pressreleases_rss.xml',
     color: '#006837',
     icon: 'Newspaper',
@@ -10,7 +10,7 @@ export const FEEDS = [
   {
     id: 'notifications',
     name: 'Notifications',
-    proxyPath: '/rss/notifications',
+    proxyPath: '/api/rss/notifications',
     directUrl: 'https://www.rbi.org.in/notifications_rss.xml',
     color: '#1677ff',
     icon: 'Bell',
@@ -18,7 +18,7 @@ export const FEEDS = [
   {
     id: 'publications',
     name: 'Publications',
-    proxyPath: '/rss/publications',
+    proxyPath: '/api/rss/publications',
     directUrl: 'https://www.rbi.org.in/Publication_rss.xml',
     color: '#722ed1',
     icon: 'BookOpen',
@@ -26,7 +26,7 @@ export const FEEDS = [
   {
     id: 'speeches',
     name: 'Speeches',
-    proxyPath: '/rss/speeches',
+    proxyPath: '/api/rss/speeches',
     directUrl: 'https://www.rbi.org.in/speeches_rss.xml',
     color: '#c8922a',
     icon: 'Mic',

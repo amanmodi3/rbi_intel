@@ -9,28 +9,28 @@ export default defineConfig({
   ],
   server: {
     proxy: {
-      '/rss/pressreleases': {
+      '/api/rss/pressreleases': {
         target: 'https://www.rbi.org.in',
         changeOrigin: true,
-        rewrite: (path) => '/pressreleases_rss.xml',
+        rewrite: () => '/pressreleases_rss.xml',
         secure: false,
       },
-      '/rss/notifications': {
+      '/api/rss/notifications': {
         target: 'https://www.rbi.org.in',
         changeOrigin: true,
-        rewrite: (path) => '/notifications_rss.xml',
+        rewrite: () => '/notifications_rss.xml',
         secure: false,
       },
-      '/rss/publications': {
+      '/api/rss/publications': {
         target: 'https://www.rbi.org.in',
         changeOrigin: true,
-        rewrite: (path) => '/Publication_rss.xml',
+        rewrite: () => '/Publication_rss.xml',
         secure: false,
       },
-      '/rss/speeches': {
+      '/api/rss/speeches': {
         target: 'https://www.rbi.org.in',
         changeOrigin: true,
-        rewrite: (path) => '/speeches_rss.xml',
+        rewrite: () => '/speeches_rss.xml',
         secure: false,
       },
     },
