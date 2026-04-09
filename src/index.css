@@ -766,6 +766,8 @@ mark {
   .top-bar-actions { order: 2; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   /* Search drops to its own full-width row */
   .search-wrap { order: 3; flex: 0 0 100% !important; max-width: 100% !important; margin-bottom: 8px; }
+  /* Hide spacer on mobile so it doesn't occupy its own row */
+  .top-bar-spacer { display: none; }
 
   /* Compact filter bar */
   .filter-bar { padding: 0 12px; gap: 6px; }

@@ -90,6 +90,9 @@ export default function Header({
         )}
       </div>
 
+      {/* Spacer — pushes buttons to the right on desktop, hidden on mobile */}
+      <div className="top-bar-spacer" style={{ flex: 1 }} />
+
       {/* Right-side controls grouped for mobile ordering */}
       <div className="top-bar-actions" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
 
