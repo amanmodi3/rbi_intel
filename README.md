@@ -57,7 +57,7 @@ The dashboard fetches from 4 official RBI RSS feeds:
 | Publications | https://www.rbi.org.in/Publication_rss.xml |
 | Speeches | https://www.rbi.org.in/speeches_rss.xml |
 
-All feeds are proxied through Vercel serverless functions to avoid CORS issues. A fallback to `api.allorigins.win` is used if the proxy fails.
+All feeds are proxied through Vercel serverless functions (`api/rss/[feed].js`) to avoid CORS issues. A fallback to `api.allorigins.win` is used if the proxy fails.
 
 ## 🏷️ NBFC Keyword Engine
 
