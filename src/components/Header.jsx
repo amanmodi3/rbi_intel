@@ -53,7 +53,7 @@ export default function Header({
     <div className="top-bar">
 
       {/* Section title + count */}
-      <div style={{ minWidth: 0, flexShrink: 0, marginRight: 4 }}>
+      <div className="top-bar-title" style={{ minWidth: 0, flexShrink: 0 }}>
         <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-1)', whiteSpace: 'nowrap' }}>
           {activeSection}
         </span>
@@ -64,7 +64,7 @@ export default function Header({
         )}
       </div>
 
-      {/* Search — centred */}
+      {/* Search — centred on desktop, full-width row on mobile */}
       <div className="search-wrap" style={{ flex: 1, maxWidth: 340 }}>
         <Search size={14} className="search-icon" strokeWidth={1.75} />
         <input
@@ -90,78 +90,75 @@ export default function Header({
         )}
       </div>
 
-      {/* Spacer */}
-      <div style={{ flex: 1 }} />
+      {/* Right-side controls grouped for mobile ordering */}
+      <div className="top-bar-actions" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
 
-      {/* Timestamp */}
-      {lastUpdated && (
-        <div style={{ fontSize: 11, color: 'var(--text-3)', textAlign: 'right', flexShrink: 0, lineHeight: 1.4 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Clock size={10} strokeWidth={1.75} />
-            <span>{format(lastUpdated, 'MMM dd, HH:mm')}</span>
-            {fromCache && (
-              <span style={{
-                background: 'var(--elevated)',
-                border: '1px solid var(--border)',
-                padding: '1px 5px', borderRadius: 4,
-                fontSize: 9, color: 'var(--text-3)',
-              }}>
-                cached
-              </span>
+        {/* Spacer — desktop only */}
+        <div style={{ flex: 1 }} />
+
+        {/* Timestamp */}
+        {lastUpdated && (
+          <div style={{ fontSize: 11, color: 'var(--text-3)', textAlign: 'right', flexShrink: 0, lineHeight: 1.4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <Clock size={10} strokeWidth={1.75} />
+              <span>{format(lastUpdated, 'MMM dd, HH:mm')}</span>
+              {fromCache && (
+                <span style={{
+                  background: 'var(--elevated)',
+                  border: '1px solid var(--border)',
+                  padding: '1px 5px', borderRadius: 4,
+                  fontSize: 9, color: 'var(--text-3)',
+                }}>
+                  cached
+                </span>
+              )}
+            </div>
+            {countdown && (
+              <div style={{ color: 'var(--emerald)', fontSize: 10, marginTop: 1 }}>
+                Next: {countdown}
+              </div>
             )}
           </div>
-          {countdown && (
-            <div style={{ color: 'var(--emerald)', fontSize: 10, marginTop: 1 }}>
-              Next: {countdown}
+        )}
+
+        {/* Theme toggle */}
+        <button onClick={onToggleTheme} className="theme-btn" title={isLight ? 'Switch to dark mode' : 'Switch to light mode'}>
+          {isLight ? <Moon size={14} strokeWidth={1.75} /> : <Sun size={14} strokeWidth={1.75} />}
+        </button>
+
+        {/* Refresh */}
+        <button onClick={onRefresh} disabled={loading} className="icon-btn" title="Refresh">
+          <RefreshCw size={14} strokeWidth={1.75} className={loading ? 'spin' : ''} />
+        </button>
+
+        {/* Settings */}
+        <div ref={settingsRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setShowSettings((s) => !s)}
+            className={`icon-btn ${showSettings ? 'icon-btn-active' : ''}`}
+            title="Settings"
+          >
+            <Settings size={14} strokeWidth={1.75} />
+          </button>
+          {showSettings && (
+            <div className="settings-dropdown fade-up">
+              <div className="settings-header">Auto-Refresh</div>
+              {INTERVAL_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => { onChangeRefreshInterval(opt.value); setShowSettings(false); }}
+                  className={`settings-item ${refreshInterval === opt.value ? 'settings-item-active' : ''}`}
+                >
+                  {opt.label}
+                  {refreshInterval === opt.value && (
+                    <span style={{ color: 'var(--emerald)', fontSize: 12 }}>✓</span>
+                  )}
+                </button>
+              ))}
             </div>
           )}
         </div>
-      )}
 
-      {/* Theme toggle */}
-      <button
-        onClick={onToggleTheme}
-        className="theme-btn"
-        title={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
-      >
-        {isLight
-          ? <Moon size={14} strokeWidth={1.75} />
-          : <Sun  size={14} strokeWidth={1.75} />
-        }
-      </button>
-
-      {/* Refresh */}
-      <button onClick={onRefresh} disabled={loading} className="icon-btn" title="Refresh">
-        <RefreshCw size={14} strokeWidth={1.75} className={loading ? 'spin' : ''} />
-      </button>
-
-      {/* Settings */}
-      <div ref={settingsRef} style={{ position: 'relative' }}>
-        <button
-          onClick={() => setShowSettings((s) => !s)}
-          className={`icon-btn ${showSettings ? 'icon-btn-active' : ''}`}
-          title="Settings"
-        >
-          <Settings size={14} strokeWidth={1.75} />
-        </button>
-
-        {showSettings && (
-          <div className="settings-dropdown fade-up">
-            <div className="settings-header">Auto-Refresh</div>
-            {INTERVAL_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => { onChangeRefreshInterval(opt.value); setShowSettings(false); }}
-                className={`settings-item ${refreshInterval === opt.value ? 'settings-item-active' : ''}`}
-              >
-                {opt.label}
-                {refreshInterval === opt.value && (
-                  <span style={{ color: 'var(--emerald)', fontSize: 12 }}>✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
     </div>

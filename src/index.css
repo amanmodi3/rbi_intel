@@ -753,8 +753,19 @@ mark {
   /* Single column cards */
   .feed-grid-inner { grid-template-columns: 1fr !important; }
 
-  /* Compact top bar */
-  .top-bar { padding: 0 12px; height: 48px; gap: 8px; }
+  /* Top bar: two-row layout on mobile */
+  .top-bar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 8px 12px 0;
+    gap: 6px;
+  }
+  /* Title row takes full width */
+  .top-bar-title { order: 1; flex: 1; min-width: 0; }
+  /* Buttons stay on same row as title */
+  .top-bar-actions { order: 2; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  /* Search drops to its own full-width row */
+  .search-wrap { order: 3; flex: 0 0 100% !important; max-width: 100% !important; margin-bottom: 8px; }
 
   /* Compact filter bar */
   .filter-bar { padding: 0 12px; gap: 6px; }
