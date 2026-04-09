@@ -9,15 +9,15 @@
 
 /* ── Design tokens ─────────────────────────────── */
 :root {
-  --bg:            #0A0A0A;
-  --surface:       #111111;
-  --elevated:      #161616;
-  --hover:         #1A1A1A;
-  --border:        #1F1F1F;
-  --border-hover:  #2D2D2D;
-  --text-1:        #F0F0F0;
-  --text-2:        #888888;
-  --text-3:        #4A4A4A;
+  --bg:            #0D0E1A;
+  --surface:       #12142A;
+  --elevated:      #181A30;
+  --hover:         #1E2038;
+  --border:        #252742;
+  --border-hover:  #363A5E;
+  --text-1:        #EEF0FF;
+  --text-2:        #8B90B8;
+  --text-3:        #4A4F72;
   --gold:          #D4AF37;
   --gold-dim:      rgba(212,175,55,0.08);
   --gold-border:   rgba(212,175,55,0.25);
@@ -44,6 +44,10 @@ body {
   height: 100vh;
   overflow: hidden;
   background: var(--bg);
+  /* Ambient gradient blobs */
+  background-image:
+    radial-gradient(ellipse 60% 50% at 15% 0%, rgba(99,84,255,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 85% 100%, rgba(16,185,129,0.06) 0%, transparent 65%);
 }
 
 .app-center {
@@ -62,7 +66,7 @@ body {
   position: sticky;
   top: 0;
   align-self: flex-start;
-  background: var(--bg);
+  background: linear-gradient(180deg, #12142A 0%, #0E1020 100%);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -347,7 +351,7 @@ body {
   top: 0;
   align-self: flex-start;
   border-left: 1px solid var(--border);
-  background: var(--bg);
+  background: linear-gradient(180deg, #12142A 0%, #0E1020 100%);
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -360,14 +364,14 @@ body {
 
 /* ── Feed Cards ────────────────────────────────── */
 .feed-card {
-  background: transparent;
+  background: rgba(255,255,255,0.025);
   border: 1px solid var(--border);
   border-radius: 12px;
   transition: border-color 0.18s ease, background 0.18s ease;
 }
 .feed-card:hover {
   border-color: var(--border-hover);
-  background: rgba(255,255,255,0.013);
+  background: rgba(120,110,255,0.06);
 }
 
 /* ── Tag Badges ────────────────────────────────── */
