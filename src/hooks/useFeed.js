@@ -71,25 +71,22 @@ export function useFeed() {
   }, []);
 
   /**
-   * Check if cached data is still valid
+   * Read cached feed. If ignoreAge=true, return data regardless of how old it is
+   * (used as a safety fallback when a live fetch fails or returns empty).
    */
-  const getCachedFeed = useCallback((feedId) => {
+  const getCachedFeed = useCallback((feedId, ignoreAge = false) => {
     try {
-      const tsStr = localStorage.getItem(`${CACHE_TIMESTAMP_PREFIX}${feedId}`);
-      if (!tsStr) return null;
-
-      const timestamp = parseInt(tsStr, 10);
-      if (Date.now() - timestamp > CACHE_MAX_AGE_MS) return null;
-
       const cached = localStorage.getItem(`${CACHE_KEY_PREFIX}${feedId}`);
       if (!cached) return null;
 
+      if (!ignoreAge) {
+        const tsStr = localStorage.getItem(`${CACHE_TIMESTAMP_PREFIX}${feedId}`);
+        if (!tsStr) return null;
+        if (Date.now() - parseInt(tsStr, 10) > CACHE_MAX_AGE_MS) return null;
+      }
+
       const parsed = JSON.parse(cached);
-      // Restore Date objects
-      return parsed.map((item) => ({
-        ...item,
-        pubDate: new Date(item.pubDate),
-      }));
+      return parsed.map((item) => ({ ...item, pubDate: new Date(item.pubDate) }));
     } catch {
       return null;
     }
@@ -142,30 +139,32 @@ export function useFeed() {
             newStatus[feed.id] = { ok: true, fromCache: false };
             anyFresh = true;
             return parsed;
-          } else {
-            // Try cache as fallback if parsing returned nothing
-            const cached = getCachedFeed(feed.id);
-            if (cached && cached.length > 0) {
-              newStatus[feed.id] = { ok: true, fromCache: true };
-              anyFromCache = true;
-              return cached;
-            }
-            newStatus[feed.id] = { ok: false, error: 'No items parsed' };
-            toast.error(`⚠️ ${feed.name}: No items found`, { duration: 4000 });
-            return [];
           }
+
+          // Fetch returned 0 items — fall back to any previously saved data
+          const stale = getCachedFeed(feed.id, true);
+          if (stale && stale.length > 0) {
+            newStatus[feed.id] = { ok: true, fromCache: true };
+            anyFromCache = true;
+            toast(`⚠️ ${feed.name}: no new items, showing saved data`, { duration: 4000 });
+            return stale;
+          }
+          newStatus[feed.id] = { ok: false, error: 'No items parsed' };
+          toast.error(`⚠️ ${feed.name}: no data available`, { duration: 4000 });
+          return [];
         } catch (err) {
           console.error(`Failed to fetch ${feed.name}:`, err);
-          newStatus[feed.id] = { ok: false, error: err.message };
-          toast.error(`⚠️ ${feed.name} feed failed to load`, { duration: 4000 });
 
-          // Try cache as last resort
-          const cached = getCachedFeed(feed.id);
-          if (cached && cached.length > 0) {
+          // Fetch failed — always fall back to any previously saved data, no matter how old
+          const stale = getCachedFeed(feed.id, true);
+          if (stale && stale.length > 0) {
             newStatus[feed.id] = { ok: true, fromCache: true, hadError: true };
             anyFromCache = true;
-            return cached;
+            toast(`⚠️ ${feed.name}: fetch failed, showing saved data`, { duration: 4000 });
+            return stale;
           }
+          newStatus[feed.id] = { ok: false, error: err.message };
+          toast.error(`⚠️ ${feed.name} failed to load`, { duration: 4000 });
           return [];
         }
       });
