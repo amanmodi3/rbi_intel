@@ -161,6 +161,7 @@ export default function App() {
           onToggleBookmarks={() => setShowBookmarks((v) => !v)}
           feedStatus={feedStatus}
           onExportCsv={handleExportCsv}
+          items={items}
         />
 
         {/* Center + Right */}

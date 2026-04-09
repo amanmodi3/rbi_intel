@@ -52,12 +52,9 @@ function StatCell({ label, value, color, accent }) {
 }
 
 export default function StatsBar({ items }) {
-  const total  = items.length;
-  const nbfc   = items.filter((i) => i.isNBFCRelevant).length;
-  const today  = items.filter((i) => isToday(i.pubDate)).length;
-  const prs    = items.filter((i) => i.feedId === 'pressreleases').length;
-  const notifs = items.filter((i) => i.feedId === 'notifications').length;
-  const pubs   = items.filter((i) => i.feedId === 'publications').length;
+  const total = items.length;
+  const nbfc  = items.filter((i) => i.isNBFCRelevant).length;
+  const today = items.filter((i) => isToday(i.pubDate)).length;
 
   const historyLabel = (() => {
     if (!items.length) return null;
@@ -82,12 +79,9 @@ export default function StatsBar({ items }) {
         )}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-        <StatCell label="Total"     value={total}  color="#10B981" accent />
-        <StatCell label="NBFC"      value={nbfc}   color="#D4AF37" accent />
-        <StatCell label="Today"     value={today}  color="#2dd4bf" />
-        <StatCell label="Press Rel" value={prs}    color="#38bdf8" />
-        <StatCell label="Notifs"    value={notifs} color="#818cf8" />
-        <StatCell label="Pubs"      value={pubs}   color="#c084fc" />
+        <StatCell label="Total" value={total} color="#10B981" accent />
+        <StatCell label="NBFC"  value={nbfc}  color="#D4AF37" accent />
+        <StatCell label="Today" value={today} color="#2dd4bf" accent />
       </div>
     </div>
   );

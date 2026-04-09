@@ -49,7 +49,27 @@ export default function LeftNav({
   bookmarkCount, showBookmarks, onToggleBookmarks,
   feedStatus,
   onExportCsv,
+  items = [],
 }) {
+  // Counts per source
+  const sourceCounts = {
+    all:           items.length,
+    pressreleases: items.filter(i => i.feedId === 'pressreleases').length,
+    notifications: items.filter(i => i.feedId === 'notifications').length,
+    publications:  items.filter(i => i.feedId === 'publications').length,
+    speeches:      items.filter(i => i.feedId === 'speeches').length,
+  };
+
+  // Counts per topic
+  const topicCounts = {
+    nbfc:             items.filter(i => i.isNBFCRelevant).length,
+    ICAAP:            items.filter(i => i.tags?.some(t => t.groupKey === 'ICAAP')).length,
+    ECL:              items.filter(i => i.tags?.some(t => t.groupKey === 'ECL')).length,
+    IRACP:            items.filter(i => i.tags?.some(t => t.groupKey === 'IRACP')).length,
+    CAPITAL_ADEQUACY: items.filter(i => i.tags?.some(t => t.groupKey === 'CAPITAL_ADEQUACY')).length,
+    PROVISIONING:     items.filter(i => i.tags?.some(t => t.groupKey === 'PROVISIONING')).length,
+    LIQUIDITY:        items.filter(i => i.tags?.some(t => t.groupKey === 'LIQUIDITY')).length,
+  };
   return (
     <nav className="sidebar">
       <div className="sidebar-inner">
@@ -106,6 +126,7 @@ export default function LeftNav({
                   onCategoryChange(cat.id);
                   if (showBookmarks) onToggleBookmarks();
                 }}
+                badge={sourceCounts[cat.id] || 0}
               />
             ))}
           </div>
@@ -121,6 +142,7 @@ export default function LeftNav({
                 dotColor={topic.color}
                 isActive={activeTopics.includes(topic.id)}
                 onClick={() => onTopicToggle(topic.id)}
+                badge={topicCounts[topic.id] || 0}
               />
             ))}
           </div>
