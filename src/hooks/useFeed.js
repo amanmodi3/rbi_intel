@@ -27,7 +27,7 @@ export function useFeed() {
   /**
    * Try to fetch a feed with retries and fallback to CORS proxy
    */
-  const fetchSingleFeed = useCallback(async (feed) => {
+  const fetchSingleFeed = useCallback(async (feed, forceRefresh = false) => {
     let lastError = null;
 
     // Try proxy path first (up to MAX_RETRIES times)
@@ -36,7 +36,11 @@ export function useFeed() {
         const response = await axios.get(feed.proxyPath, {
           timeout: 15000,
           responseType: 'text',
-          headers: { Accept: 'application/xml, text/xml, */*' },
+          headers: {
+            Accept: 'application/xml, text/xml, */*',
+            // Tell Vercel's CDN to bypass its cache and fetch fresh data
+            ...(forceRefresh && { 'Cache-Control': 'no-cache' }),
+          },
         });
         if (response.data && typeof response.data === 'string' && response.data.includes('<')) {
           return { data: response.data, source: 'proxy' };
@@ -130,7 +134,7 @@ export function useFeed() {
 
         // Fetch fresh data
         try {
-          const { data } = await fetchSingleFeed(feed);
+          const { data } = await fetchSingleFeed(feed, forceRefresh);
           const parsed = await parseRssFeed(data, feed.id, feed.name);
 
           if (parsed.length > 0) {

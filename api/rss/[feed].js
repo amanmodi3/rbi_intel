@@ -29,7 +29,9 @@ export default async function handler(req, res) {
 
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Cache-Control', 's-maxage=1800, stale-while-revalidate=3600');
+    // Cache at Vercel's CDN for 1 hour, shared across all users.
+    // stale-while-revalidate lets the CDN auto-refresh in the background after expiry.
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=3600');
     return res.status(200).send(xml);
   } catch (err) {
     return res.status(502).json({ error: err.message });
