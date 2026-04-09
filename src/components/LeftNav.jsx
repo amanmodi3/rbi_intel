@@ -64,21 +64,31 @@ export default function LeftNav({
         </div>
 
         {/* Feed status row */}
-        <div className="sidebar-status">
-          <div className="sidebar-status-dots">
-            {FEEDS.map((feed) => {
-              const ok = feedStatus?.[feed.id]?.ok;
-              return (
-                <span
-                  key={feed.id}
-                  className={`feed-dot ${ok ? 'feed-dot-ok' : 'feed-dot-err'}`}
-                  title={feed.name + (ok ? ' — OK' : ' — Error')}
-                />
-              );
-            })}
-          </div>
-          <span className="sidebar-text sidebar-status-label">All feeds live</span>
-        </div>
+        {(() => {
+          const known = FEEDS.filter(f => feedStatus?.[f.id] !== undefined);
+          const errorFeeds = known.filter(f => !feedStatus[f.id].ok);
+          const allOk = known.length === FEEDS.length && errorFeeds.length === 0;
+          const statusLabel = known.length === 0
+            ? 'Checking feeds…'
+            : allOk
+              ? 'All feeds live'
+              : `${errorFeeds.length} feed${errorFeeds.length > 1 ? 's' : ''} failed`;
+          return (
+            <div className="sidebar-status">
+              <div className="sidebar-status-dots">
+                {FEEDS.map((feed) => {
+                  const status = feedStatus?.[feed.id];
+                  const color = !status ? 'feed-dot-pending' : status.ok ? 'feed-dot-ok' : 'feed-dot-err';
+                  const tip = !status ? `${feed.name} — checking` : status.ok ? `${feed.name} — OK${status.fromCache ? ' (cached)' : ''}` : `${feed.name} — Error`;
+                  return <span key={feed.id} className={`feed-dot ${color}`} title={tip} />;
+                })}
+              </div>
+              <span className="sidebar-text sidebar-status-label" style={{ color: allOk || known.length === 0 ? undefined : 'var(--danger, #f87171)' }}>
+                {statusLabel}
+              </span>
+            </div>
+          );
+        })()}
 
         {/* Scrollable nav */}
         <div className="sidebar-content">
