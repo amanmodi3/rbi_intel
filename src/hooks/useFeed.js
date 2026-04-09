@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
 const MAX_RETRIES = 2;
 
 // Synchronously read all feeds from localStorage and hydrate UI instantly on page load.
+// Re-applies tags in case items were cached before tagging-before-cache fix.
 function hydrateFromStorage() {
   const allItems = [];
   for (const feed of FEEDS) {
@@ -21,7 +22,14 @@ function hydrateFromStorage() {
       const raw = localStorage.getItem(`${CACHE_KEY_PREFIX}${feed.id}`);
       if (!raw) continue;
       const parsed = JSON.parse(raw);
-      allItems.push(...parsed.map(item => ({ ...item, pubDate: new Date(item.pubDate) })));
+      allItems.push(...parsed.map(item => {
+        const restored = { ...item, pubDate: new Date(item.pubDate) };
+        if (!restored.tags) {
+          const { tags, isNBFCRelevant, isGeneralNBFC } = tagItem(restored.title, restored.description);
+          return { ...restored, tags, isNBFCRelevant, isGeneralNBFC };
+        }
+        return restored;
+      }));
     } catch { /* ignore */ }
   }
   allItems.sort((a, b) => b.pubDate - a.pubDate);
@@ -148,10 +156,15 @@ export function useFeed() {
           const parsed = await parseRssFeed(data, feed.id, feed.name);
 
           if (parsed.length > 0) {
-            cacheFeed(feed.id, parsed);
+            // Tag before caching so stored items always have tags/isNBFCRelevant
+            const taggedParsed = parsed.map(item => {
+              const { tags, isNBFCRelevant, isGeneralNBFC } = tagItem(item.title, item.description);
+              return { ...item, tags, isNBFCRelevant, isGeneralNBFC };
+            });
+            cacheFeed(feed.id, taggedParsed);
             newStatus[feed.id] = { ok: true, fromCache: false };
             anyFresh = true;
-            return parsed;
+            return taggedParsed;
           }
 
           // Fetch returned 0 items — fall back to any previously saved data
