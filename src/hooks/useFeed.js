@@ -28,16 +28,6 @@ function hydrateFromStorage() {
   return allItems;
 }
 
-// Returns true if every feed has a cache timestamp still within the max age window.
-function allCacheFresh() {
-  return FEEDS.every(feed => {
-    try {
-      const tsStr = localStorage.getItem(`${CACHE_TIMESTAMP_PREFIX}${feed.id}`);
-      if (!tsStr) return false;
-      return Date.now() - parseInt(tsStr, 10) < CACHE_MAX_AGE_MS;
-    } catch { return false; }
-  });
-}
 
 export function useFeed() {
   const initialItems = useState(() => hydrateFromStorage())[0];
@@ -118,17 +108,8 @@ export function useFeed() {
     async (forceRefresh = false) => {
       if (fetchingRef.current) return;
 
-      // If cache is still fresh and this is not a manual refresh, skip the network call entirely.
-      // Items are already shown from the synchronous hydration above.
-      if (!forceRefresh && allCacheFresh()) {
-        setFromCache(true);
-        setLoading(false);
-        return;
-      }
-
       fetchingRef.current = true;
-      // Don't blank the UI — keep existing items visible while fetching in background.
-      // Only show spinner when there is genuinely nothing to show.
+      // Never blank existing content — only show spinner on a truly empty first load.
       if (items.length === 0) setLoading(true);
 
       const allItems = [];
@@ -222,10 +203,13 @@ export function useFeed() {
     [items.length, fetchSingleFeed, getCachedFeed, cacheFeed]
   );
 
-  // On mount: either skip (cache fresh) or fetch only what's stale.
+  // On mount: only fetch if there is nothing in storage at all (first ever visit).
+  // Otherwise show cached data immediately and wait for the user to manually refresh.
   useEffect(() => {
-    fetchAllFeeds();
-  }, [fetchAllFeeds]);
+    if (initialItems.length === 0) fetchAllFeeds();
+    else setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     items,
