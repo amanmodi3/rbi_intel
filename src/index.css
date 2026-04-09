@@ -727,6 +727,19 @@ mark {
   .sidebar { display: none; }
   .right-panel { display: none; }
 
+  /* Show sidebar normally when rendered inside the mobile drawer */
+  .mobile-drawer .sidebar {
+    display: flex;
+    width: 100%;
+    min-width: unset;
+    height: 100%;
+    position: static;
+    border-right: none;
+  }
+  .mobile-drawer .sidebar-inner {
+    width: 100%;
+  }
+
   /* Full width center */
   .app-shell { flex-direction: column; }
   .app-center { height: 100vh; }

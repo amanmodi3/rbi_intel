@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { format, subDays, isAfter, startOfDay } from 'date-fns';
-import { BookmarkCheck, MoveRight, LayoutDashboard, BarChart2, Menu, RefreshCw } from 'lucide-react';
+import { BookmarkCheck, MoveRight, LayoutDashboard, BarChart2, Menu } from 'lucide-react';
 
 import Header       from './components/Header.jsx';
 import FilterBar    from './components/FilterBar.jsx';
@@ -280,17 +280,13 @@ export default function App() {
             <Menu size={20} strokeWidth={1.75} />
             <span>Menu</span>
           </button>
-          <button className="mobile-nav-item" onClick={() => { setMobileDrawer(null); setCategory('all'); setShowBookmarks(false); }}>
+          <button className={`mobile-nav-item ${!mobileDrawer ? 'active' : ''}`} onClick={() => { setMobileDrawer(null); setCategory('all'); setShowBookmarks(false); }}>
             <LayoutDashboard size={20} strokeWidth={1.75} />
             <span>Feed</span>
           </button>
           <button className={`mobile-nav-item ${mobileDrawer === 'stats' ? 'active' : ''}`} onClick={() => setMobileDrawer(d => d === 'stats' ? null : 'stats')}>
             <BarChart2 size={20} strokeWidth={1.75} />
             <span>Stats</span>
-          </button>
-          <button className="mobile-nav-item" onClick={() => { refresh(); setMobileDrawer(null); }} disabled={loading}>
-            <RefreshCw size={20} strokeWidth={1.75} className={loading ? 'spin' : ''} />
-            <span>Refresh</span>
           </button>
         </nav>
 
