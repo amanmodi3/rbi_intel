@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { format, subDays, isAfter, startOfDay } from 'date-fns';
+import { format, subDays, isAfter, startOfDay, isSameDay } from 'date-fns';
 import { BookmarkCheck, MoveRight, LayoutDashboard, BarChart2, Menu } from 'lucide-react';
 
 import Header       from './components/Header.jsx';
@@ -30,6 +30,7 @@ export default function App() {
   const [sortBy,        setSortBy]        = useState('newest');
   const [dateRange,     setDateRange]     = useState('all');
   const [searchQuery,   setSearchQuery]   = useState('');
+  const [selectedDate,  setSelectedDate]  = useState(null); // clicked date on timeline
 
   // Apply theme to <html> so all CSS [data-theme] selectors work
   useEffect(() => {
@@ -56,11 +57,12 @@ export default function App() {
     setDateRange('all');
     setSearchQuery('');
     setShowBookmarks(false);
+    setSelectedDate(null);
   }, []);
 
   const hasActiveFilters =
     category !== 'all' || activeTopics.length > 0 || sortBy !== 'newest' ||
-    dateRange !== 'all' || searchQuery !== '' || showBookmarks;
+    dateRange !== 'all' || searchQuery !== '' || showBookmarks || selectedDate !== null;
 
   const filteredItems = useMemo(() => {
     let r = [...items];
@@ -77,7 +79,9 @@ export default function App() {
       });
     }
 
-    if (dateRange !== 'all') {
+    if (selectedDate) {
+      r = r.filter((i) => isSameDay(i.pubDate, selectedDate));
+    } else if (dateRange !== 'all') {
       const cutoffs = { today: startOfDay(new Date()), '7d': subDays(new Date(), 7), '30d': subDays(new Date(), 30), '90d': subDays(new Date(), 90) };
       const cutoff = cutoffs[dateRange];
       if (cutoff) r = r.filter((i) => isAfter(i.pubDate, cutoff));
@@ -105,7 +109,7 @@ export default function App() {
     r.sort(sorts[sortBy] || sorts.newest);
 
     return r;
-  }, [items, showBookmarks, bookmarks, category, activeTopics, dateRange, searchQuery, sortBy]);
+  }, [items, showBookmarks, bookmarks, category, activeTopics, selectedDate, dateRange, searchQuery, sortBy]);
 
   const handleExportCsv = useCallback(() => {
     if (!filteredItems.length) return;
@@ -239,7 +243,7 @@ export default function App() {
                 : (
                   <>
                     <StatsBar items={items} />
-                    <TrendChart items={items} />
+                    <TrendChart items={items} selectedDate={selectedDate} onDateClick={setSelectedDate} />
                   </>
                 )
               }

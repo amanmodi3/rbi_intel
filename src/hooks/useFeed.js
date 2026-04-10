@@ -164,7 +164,9 @@ export function useFeed() {
             cacheFeed(feed.id, taggedParsed);
             newStatus[feed.id] = { ok: true, fromCache: false };
             anyFresh = true;
-            return taggedParsed;
+            // Return the full merged history from storage (not just the newly fetched slice)
+            // so the in-memory item set matches what hydrateFromStorage would show.
+            return getCachedFeed(feed.id, true) || taggedParsed;
           }
 
           // Fetch returned 0 items — fall back to any previously saved data

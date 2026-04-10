@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { subDays, format, startOfDay } from 'date-fns';
+import { subDays, format, startOfDay, isSameDay } from 'date-fns';
 
 const EMERALD = '#10B981';
 const GOLD    = '#D4AF37';
@@ -58,11 +58,12 @@ function CustomTooltip({ active, payload, label }) {
       {row('var(--text-3)', 'Total',    total)}
       {row(GOLD,            'NBFC',     nbfc)}
       {row(EMERALD,         'Non-NBFC', nonNbfc)}
+      <div style={{ marginTop: 6, fontSize: 10, color: 'var(--text-3)' }}>Click to filter feed</div>
     </div>
   );
 }
 
-export default function TrendChart({ items }) {
+export default function TrendChart({ items, selectedDate, onDateClick }) {
   // 14 days, index 0 = TODAY → appears at TOP in vertical layout
   const data = useMemo(() => {
     const today = startOfDay(new Date());
@@ -74,6 +75,7 @@ export default function TrendChart({ items }) {
       const total  = all.length;
       return {
         label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : format(day, 'dd MMM'),
+        date: day,
         other: Math.max(0, total - nbfc), // non-NBFC base
         nbfc,
         total,
@@ -83,57 +85,92 @@ export default function TrendChart({ items }) {
 
   const maxVal = Math.max(...data.map(d => d.total), 1);
 
+  const handleClick = (chartData) => {
+    if (!onDateClick || !chartData?.activePayload?.[0]) return;
+    const clickedDate = chartData.activePayload[0].payload.date;
+    // Toggle: clicking the same date again clears the filter
+    if (selectedDate && isSameDay(selectedDate, clickedDate)) {
+      onDateClick(null);
+    } else {
+      onDateClick(clickedDate);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
 
       {/* Header */}
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div className="stat-section-label">Publication Trend</div>
+        {selectedDate && (
+          <button
+            onClick={() => onDateClick(null)}
+            style={{
+              fontSize: 10, fontWeight: 600, color: 'var(--gold)',
+              background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)',
+              borderRadius: 4, padding: '2px 6px', cursor: 'pointer', lineHeight: 1.4,
+            }}
+          >
+            {format(selectedDate, 'dd MMM')} ×
+          </button>
+        )}
       </div>
 
       {/* Chart */}
-      <div
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-      >
-        <ResponsiveContainer width="100%" height={14 * 26}>
-          <BarChart
-            layout="vertical"
-            data={data}
-            barSize={7}
-            barCategoryGap="38%"
-            margin={{ top: 0, right: 6, left: 0, bottom: 0 }}
-          >
-            <XAxis type="number" domain={[0, maxVal]} hide />
-            <YAxis
-              type="category"
-              dataKey="label"
-              width={68}
-              tick={{ fontSize: 10, fill: 'var(--text-2)' }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <Tooltip
-              content={<CustomTooltip />}
-              cursor={{ fill: 'rgba(128,128,128,0.06)' }}
-            />
+      <ResponsiveContainer width="100%" height={14 * 26}>
+        <BarChart
+          layout="vertical"
+          data={data}
+          barSize={7}
+          barCategoryGap="38%"
+          margin={{ top: 0, right: 6, left: 0, bottom: 0 }}
+          onClick={handleClick}
+          style={{ cursor: 'pointer' }}
+        >
+          <XAxis type="number" domain={[0, maxVal]} hide />
+          <YAxis
+            type="category"
+            dataKey="label"
+            width={68}
+            tick={({ x, y, payload, index }) => {
+              const isSelected = selectedDate && data[index] && isSameDay(data[index].date, selectedDate);
+              return (
+                <text
+                  x={x} y={y} dy={4}
+                  textAnchor="end"
+                  fontSize={10}
+                  fontWeight={isSelected ? 700 : 400}
+                  fill={isSelected ? 'var(--gold)' : 'var(--text-2)'}
+                >
+                  {payload.value}
+                </text>
+              );
+            }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ fill: 'rgba(128,128,128,0.06)' }}
+          />
 
-            {/* Base segment: non-NBFC (flat right edge, covered by NBFC bar) */}
-            <Bar dataKey="other" name="Non-NBFC" stackId="s" fill={EMERALD} shape={(props) => {
-              // If nbfc is 0 for this row, round the right end too
-              const row = data[props.index];
-              if (row && row.nbfc === 0) return <FullRoundedBar {...props} fill={EMERALD} opacity={0.55} />;
-              return <FlatBar {...props} fill={EMERALD} opacity={0.55} />;
-            }} />
+          {/* Base segment: non-NBFC */}
+          <Bar dataKey="other" name="Non-NBFC" stackId="s" fill={EMERALD} shape={(props) => {
+            const row = data[props.index];
+            const dimmed = selectedDate && row && !isSameDay(row.date, selectedDate);
+            if (row && row.nbfc === 0) return <FullRoundedBar {...props} fill={EMERALD} opacity={dimmed ? 0.18 : 0.55} />;
+            return <FlatBar {...props} fill={EMERALD} opacity={dimmed ? 0.18 : 0.55} />;
+          }} />
 
-            {/* Top segment: NBFC (rounded right end) */}
-            <Bar dataKey="nbfc" name="NBFC" stackId="s" fill={GOLD} shape={(props) => (
-              <RoundedRightBar {...props} fill={GOLD} opacity={0.9} />
-            )} />
+          {/* Top segment: NBFC */}
+          <Bar dataKey="nbfc" name="NBFC" stackId="s" fill={GOLD} shape={(props) => {
+            const row = data[props.index];
+            const dimmed = selectedDate && row && !isSameDay(row.date, selectedDate);
+            return <RoundedRightBar {...props} fill={GOLD} opacity={dimmed ? 0.18 : 0.9} />;
+          }} />
 
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+        </BarChart>
+      </ResponsiveContainer>
 
     </div>
   );
