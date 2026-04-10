@@ -41,10 +41,10 @@ function CustomTooltip({ active, payload, label }) {
   const nonNbfc = payload.find(p => p.dataKey === 'other')?.value || 0;
   const nbfc    = payload.find(p => p.dataKey === 'nbfc')?.value  || 0;
   const total   = nonNbfc + nbfc;
-  const row = (dot, label, value) => (
+  const row = (dot, lbl, value) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: dot, flexShrink: 0 }} />
-      <span style={{ color: 'var(--text-2)' }}>{label}:</span>
+      <span style={{ color: 'var(--text-2)' }}>{lbl}:</span>
       <span style={{ color: 'var(--text-1)', fontWeight: 700 }}>{value}</span>
     </div>
   );
@@ -64,9 +64,10 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function TrendChart({ items, selectedDate, onDateClick }) {
+  const today = useMemo(() => startOfDay(new Date()), []);
+
   // 14 days, index 0 = TODAY → appears at TOP in vertical layout
   const data = useMemo(() => {
-    const today = startOfDay(new Date());
     return Array.from({ length: 14 }, (_, i) => {
       const day    = subDays(today, i);
       const dayEnd = new Date(day.getTime() + 86400000);
@@ -76,23 +77,33 @@ export default function TrendChart({ items, selectedDate, onDateClick }) {
       return {
         label: i === 0 ? 'Today' : i === 1 ? 'Yesterday' : format(day, 'dd MMM'),
         date: day,
-        other: Math.max(0, total - nbfc), // non-NBFC base
+        other: Math.max(0, total - nbfc),
         nbfc,
         total,
       };
     });
-  }, [items]);
+  }, [items, today]);
+
+  // Compute the label string for the selected date so we can match without relying on index
+  const selectedLabel = useMemo(() => {
+    if (!selectedDate) return null;
+    if (isSameDay(selectedDate, today)) return 'Today';
+    if (isSameDay(selectedDate, subDays(today, 1))) return 'Yesterday';
+    return format(selectedDate, 'dd MMM');
+  }, [selectedDate, today]);
 
   const maxVal = Math.max(...data.map(d => d.total), 1);
 
+  // Use activeLabel (always set by Recharts, even for empty rows) instead of
+  // activePayload which is only set when a bar exists at that position.
   const handleClick = (chartData) => {
-    if (!onDateClick || !chartData?.activePayload?.[0]) return;
-    const clickedDate = chartData.activePayload[0].payload.date;
-    // Toggle: clicking the same date again clears the filter
-    if (selectedDate && isSameDay(selectedDate, clickedDate)) {
-      onDateClick(null);
+    if (!onDateClick || !chartData?.activeLabel) return;
+    const entry = data.find(d => d.label === chartData.activeLabel);
+    if (!entry) return;
+    if (selectedDate && isSameDay(selectedDate, entry.date)) {
+      onDateClick(null); // toggle off
     } else {
-      onDateClick(clickedDate);
+      onDateClick(entry.date);
     }
   };
 
@@ -111,12 +122,12 @@ export default function TrendChart({ items, selectedDate, onDateClick }) {
               borderRadius: 4, padding: '2px 6px', cursor: 'pointer', lineHeight: 1.4,
             }}
           >
-            {format(selectedDate, 'dd MMM')} ×
+            {selectedLabel} ×
           </button>
         )}
       </div>
 
-      {/* Chart */}
+      {/* Chart — interval={0} forces all 14 labels to render */}
       <ResponsiveContainer width="100%" height={14 * 26}>
         <BarChart
           layout="vertical"
@@ -132,15 +143,16 @@ export default function TrendChart({ items, selectedDate, onDateClick }) {
             type="category"
             dataKey="label"
             width={68}
-            tick={({ x, y, payload, index }) => {
-              const isSelected = selectedDate && data[index] && isSameDay(data[index].date, selectedDate);
+            interval={0}
+            tick={({ x, y, payload }) => {
+              const isSelected = payload.value === selectedLabel;
               return (
                 <text
                   x={x} y={y} dy={4}
                   textAnchor="end"
                   fontSize={10}
                   fontWeight={isSelected ? 700 : 400}
-                  fill={isSelected ? 'var(--gold)' : 'var(--text-2)'}
+                  fill={isSelected ? GOLD : 'var(--text-2)'}
                 >
                   {payload.value}
                 </text>
@@ -157,7 +169,7 @@ export default function TrendChart({ items, selectedDate, onDateClick }) {
           {/* Base segment: non-NBFC */}
           <Bar dataKey="other" name="Non-NBFC" stackId="s" fill={EMERALD} shape={(props) => {
             const row = data[props.index];
-            const dimmed = selectedDate && row && !isSameDay(row.date, selectedDate);
+            const dimmed = selectedLabel && row && row.label !== selectedLabel;
             if (row && row.nbfc === 0) return <FullRoundedBar {...props} fill={EMERALD} opacity={dimmed ? 0.18 : 0.55} />;
             return <FlatBar {...props} fill={EMERALD} opacity={dimmed ? 0.18 : 0.55} />;
           }} />
@@ -165,7 +177,7 @@ export default function TrendChart({ items, selectedDate, onDateClick }) {
           {/* Top segment: NBFC */}
           <Bar dataKey="nbfc" name="NBFC" stackId="s" fill={GOLD} shape={(props) => {
             const row = data[props.index];
-            const dimmed = selectedDate && row && !isSameDay(row.date, selectedDate);
+            const dimmed = selectedLabel && row && row.label !== selectedLabel;
             return <RoundedRightBar {...props} fill={GOLD} opacity={dimmed ? 0.18 : 0.9} />;
           }} />
 
